@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="sl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Najdi svoj hobi | UP HobbyJoy</title>
+    <style>
+        :root {
+            --primary: #4A90E2;
+            --primary-hover: #357ABD;
+            --bg: #F4F7F9;
+            --card: #FFFFFF;
+            --text: #2C3E50;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .quiz-container {
+            background: var(--card);
+            padding: 30px;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+            max-width: 550px;
+            width: 100%;
+        }
+        h1 {
+            color: var(--primary);
+            font-size: 24px;
+            text-align: center;
+            margin-bottom: 5px;
+        }
+        .subtitle {
+            text-align: center;
+            font-size: 14px;
+            color: #7F8C8D;
+            margin-bottom: 20px;
+        }
+        .progress-bar {
+            height: 6px;
+            background: #E0E6ED;
+            border-radius: 3px;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+        .progress {
+            height: 100%;
+            background: var(--primary);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+        .q-counter {
+            font-size: 13px;
+            font-weight: bold;
+            color: var(--primary);
+            text-transform: uppercase;
+            margin-bottom: 8px;
+        }
+        .btn {
+            display: block;
+            width: 100%;
+            padding: 14px 18px;
+            margin: 10px 0;
+            background: #F0F4F8;
+            border: 2px solid transparent;
+            border-radius: 10px;
+            font-size: 15px;
+            text-align: left;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            color: var(--text);
+            box-sizing: border-box;
+        }
+        .btn:hover {
+            border-color: var(--primary);
+            background: #E8F1FA;
+        }
+        .hidden { display: none; }
+        .result-box {
+            text-align: center;
+        }
+        .top-card {
+            background: #F8FAFC;
+            border: 1px solid #E2E8F0;
+            border-radius: 12px;
+            padding: 18px;
+            margin-bottom: 15px;
+            text-align: left;
+            position: relative;
+        }
+        .top-card.rank-1 {
+            border: 2px solid var(--primary);
+            background: #F0F7FF;
+        }
+        .match-badge {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: #27AE60;
+            color: white;
+            font-weight: bold;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 13px;
+        }
+        .top-card.rank-1 .match-badge {
+            background: var(--primary);
+            font-size: 14px;
+        }
+        .card-title {
+            font-size: 17px;
+            font-weight: bold;
+            color: var(--text);
+            margin-bottom: 6px;
+            padding-right: 65px;
+        }
+        .card-desc {
+            font-size: 14px;
+            color: #555;
+            line-height: 1.4;
+            margin-bottom: 10px;
+        }
+        .card-price {
+            font-weight: bold;
+            color: #27AE60;
+            font-size: 15px;
+        }
+        .shop-btn {
+            display: block;
+            text-align: center;
+            padding: 14px;
+            background: var(--primary);
+            color: white;
+            text-decoration: none;
+            border-radius: 10px;
+            font-weight: bold;
+            margin-top: 20px;
+            transition: background 0.2s;
+        }
+        .shop-btn:hover {
+            background: var(--primary-hover);
+        }
+    </style>
+</head>
+<body>
+
+<div class="quiz-container">
+    <h1>✨ Kateri hobi je najboljši zate?</h1>
+    <div class="subtitle">UP HobbyJoy d.o.o. – Sežana</div>
+
+    <div class="progress-bar">
+        <div id="progress" class="progress"></div>
+    </div>
+
+    <div id="quiz">
+        <div id="q-counter" class="q-counter"></div>
+        <h3 id="question-text" style="margin-top:0;">Nalagam vprašanje...</h3>
+        <div id="options-container"></div>
+    </div>
+
+    <div id="result" class="hidden result-box">
+        <h2 style="margin-bottom: 5px;">Tvoji TOP 3 prilagojeni hobiji</h2>
+        <p style="color: #7F8C8D; font-size: 14px; margin-bottom: 20px;">Glede na tvoje odgovore smo izračunali odstotek ujemanja za tvoj idealen hobi:</p>
+        
+        <div id="results-container"></div>
+
+        <a class="shop-btn" href="https://market.pythonanywhere.com/hobbyjoy/" target="_blank">Obišči spletno trgovino UP HobbyJoy 🛒</a>
+    </div>
+</div>
+
+<script>
+const questions = [
+    {
+        q: "1. Koliko časa na dan ali tedensko običajno preživiš doma?",
+        options: [
+            { text: "🏠 Večino časa sem doma – najraje uživam v svojem udobju.", packs: ["CHILL", "ART", "STITCH", "GLOW", "CHARM", "FOCUS"] },
+            { text: "🛋️ Popoldneve in večere – doma se rad/a sprostim ali kaj ustvarim.", packs: ["BITE", "LUXE", "BOBBINETTE", "MELODY", "PHOTO LOVER"] },
+            { text: "🏃 Doma le prespim – večino časa sem aktiven/na zunaj.", packs: ["RUN AND FUN", "RIDE PACK", "GREEN GARDEN", "SPLASH", "VOLLY", "RITMO", "BOND", "LUXURY", "PICNIC"] }
+        ]
+    },
+    {
+        q: "2. Kakšno okolje te najbolj napolni z energijo?",
+        options: [
+            { text: "🧘 Mir in tišina, kjer se lahko popolnoma odklopim.", packs: ["CHILL", "GLOW", "CHARM"] },
+            { text: "🎨 Ustvarjalen prostor z materiali, barvami ali orodjem.", packs: ["ART", "STITCH", "BOBBINETTE", "LUXE"] },
+            { text: "🌲 Narava, igrišče ali odprti prostori za gibanje.", packs: ["RUN AND FUN", "RIDE PACK", "SPLASH", "VOLLY", "GREEN GARDEN"] },
+            { text: "🎉 Živahno okolje v družbi prijateljev in dobri energiji.", packs: ["BOND", "PICNIC", "RITMO", "LUXURY"] }
+        ]
+    },
+    {
+        q: "3. Kakšen je tvoj odnos do fizikalnih in športnih aktivnosti?",
+        options: [
+            { text: "🔥 Obožujem dinamične športe, znojenje in premikanje meja.", packs: ["VOLLY", "RUN AND FUN", "RIDE PACK", "SPLASH"] },
+            { text: "💃 Imam raje sproščeno rekreacijo, ples ali sprehode.", packs: ["RITMO", "GREEN GARDEN", "PICNIC"] },
+            { text: "🧠 Raje se posvečam mirnim, umirjenim ali ročnim spretnostim.", packs: ["ART", "STITCH", "BOBBINETTE", "FOCUS", "CHILL", "BITE"] }
+        ]
+    },
+    {
+        q: "4. Kako najraje izražaš svojo ustvarjalnost ali radovednost?",
+        options: [
+            { text: "🖼️ Z risanjem, barvanjem ali oblikovanjem z rokami.", packs: ["ART", "LUXE", "BOBBINETTE", "STITCH"] },
+            { text: "🍳 Z raziskovanjem novih okusov in receptov.", packs: ["BITE"] },
+            { text: "📸 Z lovljenjem lepih trenutkov, fotografiranjem in spomini.", packs: ["PHOTO LOVER"] },
+            { text: "🎧 Z poslušanjem ali ustvarjanjem glasbe in zvokov.", packs: ["MELODY"] },
+            { text: "📚 Z usvajanjem novih znanj in organizacijo zapiskov.", packs: ["FOCUS"] }
+        ]
+    },
+    {
+        q: "5. Kako reagiraš na stres in hiter življenjski tempo?",
+        options: [
+            { text: "🛁 Potrebujem čas zase, nego, nego kože ali sprostitveno masažo.", packs: ["CHILL", "GLOW", "CHARM"] },
+            { text: "🏃 Stres najlažje iztekem ali izkolesarim v naravi.", packs: ["RUN AND FUN", "RIDE PACK"] },
+            { text: "👥 Stres pozabim ob družabnih igrah in smehu s prijatelji.", packs: ["BOND", "PICNIC"] },
+            { text: "🌱 Sprošča me delo z rastlinami in zemljico.", packs: ["GREEN GARDEN"] }
+        ]
+    },
+    {
+        q: "6. Katera od teh vikend aktivnosti te najbolj pritegne?",
+        options: [
+            { text: "🧺 Opremiti se za sončen dan in piknik v parku.", packs: ["PICNIC", "GREEN GARDEN"] },
+            { text: "🪡 Izdelati unikaten kos nakita ali ročni izdelek.", packs: ["LUXE", "STITCH", "BOBBINETTE"] },
+            { text: "🏊 Skok v vodo, plavanje in uživanje na soncu.", packs: ["SPLASH"] },
+            { text: "🧳 Popolno luksuzno razvajanje z wellnessom in odklopom.", packs: ["LUXURY"] }
+        ]
+    },
+    {
+        q: "7. Kako ravnanaš z delom z rokami in natančnostjo?",
+        options: [
+            { text: "🧵 Obožujem natančno delo, pletenje, šivanje ali klekljanje.", packs: ["STITCH", "BOBBINETTE", "LUXE"] },
+            { text: "🖌️ Delam raje svobodno in izražam svojo umetniško žilico.", packs: ["ART", "PHOTO LOVER"] },
+            { text: "⚽ Raje imam hitre in praktične aktivnosti brez drobnih podrobnosti.", packs: ["VOLLY", "RUN AND FUN", "RIDE PACK", "BOND"] }
+        ]
+    },
+    {
+        q: "8. Ko imaš prost večer, kakšna je tvoja idealna družba?",
+        options: [
+            { text: "👥 Biti v krogu prijateljev ali družine ob družabnih večerih.", packs: ["BOND", "PICNIC", "BITE"] },
+            { text: "👤 Sem najraje sam/a s svojimi mislimi in ustvarjanjem.", packs: ["CHILL", "GLOW", "ART", "FOCUS", "BOBBINETTE"] },
+            { text: "🎶 V družbi dobre glasbe, plesa ali ritma.", packs: ["RITMO", "MELODY"] }
+        ]
+    },
+    {
+        q: "9. Kaj ti pomeni največje zadovoljstvo ob koncu dneva?",
+        options: [
+            { text: "🏆 Občutek, da sem naredil/a nekaj za svoje zdravje in kondicijo.", packs: ["RUN AND FUN", "RIDE PACK", "VOLLY", "SPLASH"] },
+            { text: "✨ Občutek, da sem ustvaril/a nekaj lepega ali opaznega z lastnimi rokami.", packs: ["ART", "LUXE", "STITCH", "PHOTO LOVER", "BITE"] },
+            { text: "😌 Občutek popolnega miru, regeneracije in spočitosti.", packs: ["CHILL", "GLOW", "CHARM", "LUXURY"] }
+        ]
+    },
+    {
+        q: "10. Kateri cilj bi si najraje zadal/a v naslednjih mesecih?",
+        options: [
+            { text: "🎯 Izboljšati svojo usmerjenost, produktivnost ali uspeh pri učenju.", packs: ["FOCUS"] },
+            { text: "🌿 Ustvariti svoj mali zeleni kotiček z rožami.", packs: ["GREEN GARDEN"] },
+            { text: "💃 Naučiti se novih plesnih ali glasbenih veščin.", packs: ["RITMO", "MELODY"] },
+            { text: "🧗 Preizkusiti nov šport ali izboljšati športno pripravljenost.", packs: ["RUN AND FUN", "VOLLY", "RIDE PACK"] }
+        ]
+    }
+];
+
+const packages = {
+    "ART": { name: "Umetniško ustvarjanje in slikanje", packName: "ART – Začetni ustvarjalni paket", desc: "Barvice, barve, čopiči in platno za razkritje tvoje umetniške žilice.", price: "58,18 €" },
+    "BITE": { name: "Kuhanje in kulinarično ustvarjanje", packName: "BITE – Začetni kuharski paket", desc: "Recepti za hitro pripravo, izbrane začimbe, kuhalnica in predpasnik.", price: "27,86 €" },
+    "BOBBINETTE": { name: "Tradicionalno klekljanje", packName: "BOBBINETTE – Paket za klekljanje", desc: "Bula za klekljanje, bucike, sukanci in vzorci za vstop v svet ročnih spretnosti.", price: "85,00 €" },
+    "BOND": { name: "Družabni večeri in igre", packName: "BOND – Paket za druženje", desc: "Mini družabne igre, prigrizki, karte, zvočnik in Twister.", price: "54,90 €" },
+    "CHARM": { name: "Osebna lepotna nega", packName: "CHARM – Paket za lepotno nego", desc: "Mini krema, balzam, šampon, mini parfum, lak za nohte in lip gloss.", price: "30,30 €" },
+    "CHILL": { name: "Sprostitev in meditacija", packName: "CHILL – Paket za sprostitev", desc: "Svečke, eterična olja, čaj, kamenčki za masažo in maska za oči.", price: "28,68 €" },
+    "FOCUS": { name: "Organizacija in učinkovito učenje", packName: "FOCUS – Začetni učni paket", desc: "Mini listke, nalepke, označevalci, motivacijska sporočila in beležka.", price: "23,77 €" },
+    "GLOW": { name: "Nega kože in sprostitveni rituali", packName: "GLOW – Paket za nego kože", desc: "Maska za obraz, kreme za roke, olje za telo in obliži proti mozoljem.", price: "20,48 €" },
+    "GREEN GARDEN": { name: "Vrtnarjenje in domači botanični kotiček", packName: "GREEN GARDEN – Vrtnarski paket", desc: "Semena za rože, lopatka, rokavice in priročnik za projekte.", price: "36,87 €" },
+    "LUXE": { name: "Izdelava unikatnega nakita", packName: "LUXE – Paket za izdelavo nakita", desc: "Pripomočki za izdelavo, ogrlice, zapestnice, uhani in prstani.", price: "28,68 €" },
+    "MELODY": { name: "Glasbeno ustvarjanje", packName: "MELODY – Začetni glasbeni paket", desc: "Slušalke, mikrofon, zvočnik, mini note in instrumenti.", price: "36,87 €" },
+    "PHOTO LOVER": { name: "Fotografija in ustvarjanje spominov", packName: "PHOTO LOVER – Fotografski paket", desc: "Foto papir, dekorativni pripomočki, spominska kartica in polaroidi.", price: "43,43 €" },
+    "RIDE PACK": { name: "Kolesarjenje in raziskovanje", packName: "RIDE PACK – Kolesarski paket", desc: "Flaška, odsevnik, energijska ploščica in orodje za kolo.", price: "28,68 €" },
+    "RITMO": { name: "Ples in izražanje skozi gibanje", packName: "RITMO – Začetni plesni paket", desc: "Plesni trakovi, kartica s citati, zvočnik in flaška za vodo.", price: "30,30 €" },
+    "RUN AND FUN": { name: "Tek in rekreativno gibanje", packName: "RUN AND FUN – Tekaški paket", desc: "Športne nogavice, odsevnik, naglavna lučka, trak in slušalke.", price: "28,68 €" },
+    "SPLASH": { name: "Plavanje in vodne aktivnosti", packName: "SPLASH – Plavalni paket", desc: "Kopalke, brisača, vodoodporna torbica, očala in krema za sončenje.", price: "28,68 €" },
+    "STITCH": { name: "Šivanje in pletenje", packName: "STITCH – Paket za šivanje in pletenje", desc: "Nasveti za pletenje, komplet za šivanje in komplet za pletenje.", price: "28,68 €" },
+    "VOLLY": { name: "Odbojka in ekipni športi", packName: "VOLLY – Začetni paket za odbojko", desc: "Žoga, ščitniki, nogavice, flaška za vodo in energijska ploščica.", price: "38,52 €" },
+    "PICNIC": { name: "Pikniki in druženje v naravi", packName: "🌷 1. MAJSKA PONUDBA – Piknik komplet", desc: "Piknik odeja, pribor, kozarci, košara in posoda.", price: "90,00 €" },
+    "LUXURY": { name: "Luksuzno potovanje in razvajanje", packName: "⚜️ Turistični Luksuzni Paket", desc: "Ekskluzivni paket z wellnessom, luksuzno sobo in zajtrkom.", price: "1000,00 €" }
+};
+
+let currentQ = 0;
+let scores = {};
+
+function showQuestion() {
+    const q = questions[currentQ];
+    document.getElementById('q-counter').innerText = `Vprašanje ${currentQ + 1} od ${questions.length}`;
+    document.getElementById('question-text').innerText = q.q;
+    const container = document.getElementById('options-container');
+    container.innerHTML = '';
+
+    const progressPct = (currentQ / questions.length) * 100;
+    document.getElementById('progress').style.width = progressPct + '%';
+
+    q.options.forEach(opt => {
+        const btn = document.createElement('button');
+        btn.className = 'btn';
+        btn.innerText = opt.text;
+        btn.onclick = () => selectOption(opt.packs);
+        container.appendChild(btn);
+    });
+}
+
+function selectOption(packKeys) {
+    packKeys.forEach(p => {
+        scores[p] = (scores[p] || 0) + 1;
+    });
+    
+    currentQ++;
+    if (currentQ < questions.length) {
+        showQuestion();
+    } else {
+        showResult();
+    }
+}
+
+function showResult() {
+    document.getElementById('progress').style.width = '100%';
+    document.getElementById('quiz').classList.add('hidden');
+    document.getElementById('q-counter').classList.add('hidden');
+    document.getElementById('result').classList.remove('hidden');
+
+    // Sortiranje hobijev glede na število točk
+    let sortedPacks = Object.keys(packages).sort((a, b) => (scores[b] || 0) - (scores[a] || 0));
+    
+    // Izračun max točk
+    let maxPossibleScore = 10;
+    
+    // Top 3 hobiji
+    let top3 = sortedPacks.slice(0, 3);
+    
+    const resultsContainer = document.getElementById('results-container');
+    resultsContainer.innerHTML = '';
+
+    top3.forEach((packKey, index) => {
+        let score = scores[packKey] || 1;
+        // Izračun procenta (med 70% in 98% za vrhunske rezultate)
+        let percentage = Math.min(99, Math.max(65, Math.round((score / maxPossibleScore) * 100 + (3 - index) * 8)));
+        
+        let pData = packages[packKey];
+
+        const card = document.createElement('div');
+        card.className = `top-card ${index === 0 ? 'rank-1' : ''}`;
+        card.innerHTML = `
+            <div class="match-badge">${percentage}% UJEMANJE</div>
+            <div class="card-title">${index + 1}. ${pData.name}</div>
+            <div class="card-desc">${pData.desc}</div>
+            <div style="font-size:13px; color:#777; margin-bottom:5px;">Priporočeni paket: <strong>${pData.packName}</strong></div>
+            <div class="card-price">Cena: ${pData.price}</div>
+        `;
+        resultsContainer.appendChild(card);
+    });
+}
+
+showQuestion();
+</script>
+
+</body>
+</html>
